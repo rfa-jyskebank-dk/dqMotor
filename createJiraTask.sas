@@ -11,7 +11,40 @@ data tabeller;
   infile datalines truncover;
   input tabel $100.;
   datalines;
-autoritative_kilder
+regel_kritisk_data_element_map
+daekning_anden
+daekning_anden_type
+daekning_kode
+data_ejer
+data_omraade
+data_omraade_detail
+dimension
+domaene
+grundata_kolonne
+grundata_tabel
+kommentar
+kritisk_anv
+kritisk_anv_ejer
+kritisk_anv_regel_fravalgt
+kritisk_data_element
+kritisk_data_element_afdeakning
+ks_beskrivelse
+ks_kontrol
+ks_maalling
+regel_global_id
+regel_avanceret
+regel_beskrivelse
+regel_evaluering
+regel_graense_vaerdi
+regel_graense_vaerdi_suppl
+regel_koersel_liste
+regel_maaling
+rolle_id_kobling
+rolle_suppl
+rolle_suppl_type
+stikproeve_maaling
+stikproeve_evaluering
+stikproeve_graenser
 ;
 run;
 options set=SSLREQCERT="never";
@@ -25,7 +58,7 @@ options set=SSLREQCERT="never";
       stop;
     run;
 
-  %end;
+
 
   /*Create json object*/
   proc json out="~/jiraIssue.json" pretty noscan;
@@ -37,11 +70,12 @@ options set=SSLREQCERT="never";
     write values "id" "26450";
     write close;
     write values "summary" "Oprettelse af &tabelNavn";
-    write values "description" "*Userstory*: Som udvikler vil jeg oprette tabellen &tabelNavn.\n\n
+    write values "description" "*Userstory*: Som udvikler vil jeg oprette tabellen &INLIBDQres..&tabelNavn. i test\n\n
       *Refinement*: Rud + Henriette \n\n
-      *Afhængigheder*: Tjek of forgein key tabeller er oprettet\n\n
+      *Afhængigheder*: Tabeller som foreign keys peger på er oprettet\n\n
       *Usikkerhed i opgaveløsning*: Nej\n\n
-      *Acceptkriterier*: Tabellen er oprettet\n\n
+      *Acceptkriterier*: Tabellen er oprettet i udviklingsmiljøet\n
+      Der er gemt et tabel-oprettelses-script i tabel prod hist \n\n
       *Hvad går opgaven ud på*:\n\n
       &tabelNavn skal oprettes. Se https://confluence.corp.jyskebank.net/confluence/spaces/datakvalitet/pages/168104576/Datamodel+for+datakvalitetsmotoren for mere information.\n\n
       \n\n
@@ -72,6 +106,7 @@ options set=SSLREQCERT="never";
   run;
 
   %prochttp_check_return(code=201);
+    %end;
 %mend createJiraIssues;
 
 %createJiraIssues();
