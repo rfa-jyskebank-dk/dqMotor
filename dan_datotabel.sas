@@ -183,9 +183,11 @@ data dato_tabel;
     slut_dato
     _dato
     antal_bankdage_efter_primo_kvt
+	i_dag
     ;
 run;
 
-%metalib(dqres)
-proc append base=&inlibdqres..kalender data=work.dato_tabel;
+%metalib(dqres);
+%metareg(dqres,kalender);
+proc append base=&inlibdqres..kalender data=work.dato_tabel force;
 run;
