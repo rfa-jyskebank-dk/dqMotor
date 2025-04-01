@@ -1,187 +1,191 @@
 options locale=da_DK;
 
-data dato_Tabel;
+data dato_tabel;
     length
         dato 8
-        iDag $1
-        dagNr 3
-        ugedagNavn $7
-        ugeNr 3
-        maanedNavn $9
-        maanedNr 3
-        kvartalNr 3
+        i_dag $1
+        dag_nr 3
+        ugedag_navn $7
+        uge_nr 3
+        maaned_navn $9
+        maaned_nr 3
+        kvartal_nr 3
         aar 3
-        danskBankdagJn $1
-        primoDanskBankdagJn $1
-        ultimoDanskBankdagJn $1
-        primoJn $1
-        ultimoJn $1
-        ultimoMdr 8
-        primoMdr 8
-        ultimoForrigeMdr 8
-        primoForrigeMdr 8
-        aarMnd 6
-        aarMndForrigeMdr 6
-        bankdagForrigeDag 8
-        primoDanskBankdagForrigeMdr 8
-        primoDanskBankdag 8
-        ultimoDanskBankdagForrigeMdr 8
-        ultimoDanskBankdag 8
-        primoUgeDanskBankdagJn $1
-        ultimoUgeDanskBankdagJn $1
-        primoDanskBankdagKvartalJn $1
-        ultimoDanskBankdagKvartalJn $1
-        ultimoDanskBankdagKvartal 8
-        primoDanskBankdagKvartal 8
-        ultimoDkBdagKvtForrigeKvt 8
-        primoDkBdagKvtForrigeKvt 8
-        ultimoDanskBankdagAar 8
-        primoDanskBankdagAar 8
-        ultimoDanskBankdagAarJn  $1
-        primoDanskBankdagAarJn $1
-        irbOutputJn $1
-        irbOutputDato 8
-        forsteBdEfter20KldagJn $1
-        forsteBdEfter20KldagDato 8
-        tyskBankdagJn $1
-        primoTyskBankdagJn $1
-        ultimoTyskBankdagJn $1
-        primoTyskBankdag 8
-        ultimoTyskBankdag 8
+        dansk_bankdag_jn $1
+        primo_dansk_bankdag_jn $1
+        ultimo_dansk_bankdag_jn $1
+        primo_jn $1
+        ultimo_jn $1
+        ultimo_mdr 8
+        primo_mdr 8
+        ultimo_forrige_mdr 8
+        primo_forrige_mdr 8
+        aar_mnd 6
+        aar_mnd_forrige_mdr 6
+        bankdag_forrige_dag 8
+        primo_dansk_bankdag_forrige_mdr 8
+        primo_dansk_bankdag 8
+        ultimo_dansk_bankdag_forrige_mdr 8
+        ultimo_dansk_bankdag 8
+        primo_uge_dansk_bankdag_jn $1
+        ultimo_uge_dansk_bankdag_jn $1
+        primo_dansk_bankdag_kvartal_jn $1
+        ultimo_dansk_bankdag_kvartal_jn $1
+        ultimo_dansk_bankdag_kvartal 8
+        primo_dansk_bankdag_kvartal 8
+        ultimo_dk_bdag_kvt_forrige_kvt 8
+        primo_dk_bdag_kvt_forrige_kvt 8
+        ultimo_dansk_bankdag_aar 8
+        primo_dansk_bankdag_aar 8
+        ultimo_dansk_bankdag_aar_jn $1
+        primo_dansk_bankdag_aar_jn $1
+        irb_output_jn $1
+        irb_output_dato 8
+        forste_bd_efter_20_kldag_jn $1
+        forste_bd_efter_20_kldag_dato 8
+        tysk_bankdag_jn $1
+        primo_tysk_bankdag_jn $1
+        ultimo_tysk_bankdag_jn $1
+        primo_tysk_bankdag 8
+        ultimo_tysk_bankdag 8
     ;
 ;
-    startDato=intnx('day',today(),-365*1,'s');
-    slutDato=intnx('day',today(),365*1,'s');
+    start_dato = intnx('day', today(), -365*1, 's');
+    slut_dato = intnx('day', today(), 365*1, 's');
 
-    do _dato=startDato to slutDato;
+    do _dato = start_dato to slut_dato;
         * Calculate basic date components;
-        dato=dhms(_dato,0,0,0);
-        if _dato=today() then iDag='J';
-        else iDag='N';
+        dato = dhms(_dato, 0, 0, 0);
+        if _dato = today() then i_dag = 'J';
+        else i_dag = 'N';
 
-        dagNr = day(_dato);
-        ugedagNavn = Propcase(NLDATE(_dato,'%A'));
-        ugeNr = week(_dato,'v');
-        maanedNavn = propcase(NLDATE(_dato,'%B'));
-        maanedNr = month(_dato);
+        dag_nr = day(_dato);
+        ugedag_navn = Propcase(NLDATE(_dato, '%A'));
+        uge_nr = week(_dato, 'v');
+        maaned_navn = propcase(NLDATE(_dato, '%B'));
+        maaned_nr = month(_dato);
         aar = year(_dato);
-        aarMnd = cats(aar, put(maanedNr, z2.));
-        aarMndForrigeMdr = cats(year(intnx('month', _dato, -1, 'e')), put(month(intnx('month', _dato, -1, 'e')), z2.));
-        kvartalNr = qtr(_dato);
+        aar_mnd = cats(aar, put(maaned_nr, z2.));
+        aar_mnd_forrige_mdr = cats(year(intnx('month', _dato, -1, 'e')), put(month(intnx('month', _dato, -1, 'e')), z2.));
+        kvartal_nr = qtr(_dato);
 
         * Determine bank days;
-        if erBankdag(_dato) then danskBankdagJn = 'J';
-        else danskBankdagJn = 'N';
+        if erbankdag(_dato) then dansk_bankdag_jn = 'J';
+        else dansk_bankdag_jn = 'N';
 
-        if erTyskBankdag(_dato) then tyskBankdagJn = 'J';
-        else tyskBankdagJn = 'N';
+        if ertyskbankdag(_dato) then tysk_bankdag_jn = 'J';
+        else tysk_bankdag_jn = 'N';
 
         * Determine month boundaries;
-        if _dato = intnx('month', _dato, 0, 'b') then primoJn = 'J';
-        else primoJn = 'N';
-        primoMdr = dhms(intnx('month', _dato, 0, 'b'), 0, 0, 0);
-        primoForrigeMdr = dhms(intnx('month', _dato, -1, 'b'), 0, 0, 0);
+        if _dato = intnx('month', _dato, 0, 'b') then primo_jn = 'J';
+        else primo_jn = 'N';
+        primo_mdr = dhms(intnx('month', _dato, 0, 'b'), 0, 0, 0);
+        primo_forrige_mdr = dhms(intnx('month', _dato, -1, 'b'), 0, 0, 0);
 
-        if _dato = intnx('month', _dato, 0, 'e') then ultimoJn = 'J';
-        else ultimoJn = 'N';
-        ultimoMdr = dhms(intnx('month', _dato, 0, 'e'), 0, 0, 0);
-        ultimoForrigeMdr = dhms(intnx('month', _dato, -1, 'e'), 0, 0, 0);
+        if _dato = intnx('month', _dato, 0, 'e') then ultimo_jn = 'J';
+        else ultimo_jn = 'N';
+        ultimo_mdr = dhms(intnx('month', _dato, 0, 'e'), 0, 0, 0);
+        ultimo_forrige_mdr = dhms(intnx('month', _dato, -1, 'e'), 0, 0, 0);
 
         * Determine Danish bank days;
-        primoDanskBankdag = dhms(BankdagEfter(intnx('month', _dato, -1, 'e')), 0, 0, 0);
-        if _dato = datepart(primoDanskBankdag) then primoDanskBankdagJn = 'J';
-        else primoDanskBankdagJn = 'N';
+        primo_dansk_bankdag = dhms(BankdagEfter(intnx('month', _dato, -1, 'e')), 0, 0, 0);
+        if _dato = datepart(primo_dansk_bankdag) then primo_dansk_bankdag_jn = 'J';
+        else primo_dansk_bankdag_jn = 'N';
 
-        ultimoDanskBankdag = dhms(BankdagFor(intnx('month', _dato, 1, 'b')), 0, 0, 0);
-        if _dato = datepart(ultimoDanskBankdag) then ultimoDanskBankdagJn = 'J';
-        else ultimoDanskBankdagJn = 'N';
+        ultimo_dansk_bankdag = dhms(bankdagFor(intnx('month', _dato, 1, 'b')), 0, 0, 0);
+        if _dato = datepart(ultimo_dansk_bankdag) then ultimo_dansk_bankdag_jn = 'J';
+        else ultimo_dansk_bankdag_jn = 'N';
 
         * Determine German bank days;
-        primoTyskBankdag = dhms(tyskBankdagEfter(intnx('month', _dato, -1, 'e')), 0, 0, 0);
-        if _dato = datepart(primoTyskBankdag) then primoTyskBankdagJn = 'J';
-        else primoTyskBankdagJn = 'N';
+        primo_tysk_bankdag = dhms(tyskBankdagFor(intnx('month', _dato, -1, 'e')), 0, 0, 0);
+        if _dato = datepart(primo_tysk_bankdag) then primo_tysk_bankdag_jn = 'J';
+        else primo_tysk_bankdag_jn = 'N';
 
-        ultimoTyskBankdag = dhms(tyskBankdagFor(intnx('month', _dato, 1, 'b')), 0, 0, 0);
-        if _dato = datepart(ultimoTyskBankdag) then ultimoTyskBankdagJn = 'J';
-        else ultimoTyskBankdagJn = 'N';
+        ultimo_tysk_bankdag = dhms(bankdagFor(intnx('month', _dato, 1, 'b')), 0, 0, 0);
+        if _dato = datepart(ultimo_tysk_bankdag) then ultimo_tysk_bankdag_jn = 'J';
+        else ultimo_tysk_bankdag_jn = 'N';
 
         * Determine week boundaries;
-        if _dato = bankdagefter(intnx('weekv', _dato, -1, 'e')) then primoUgeDanskBankdagJn = 'J';
-        else primoUgeDanskBankdagJn = 'N';
+        if _dato = bankdagEfter(intnx('weekv', _dato, -1, 'e')) then primo_uge_dansk_bankdag_jn = 'J';
+        else primo_uge_dansk_bankdag_jn = 'N';
 
-        if _dato = bankdagFor(intnx('weekv', _dato, 1, 'b')) then ultimoUgeDanskBankdagJn = 'J';
-        else ultimoUgeDanskBankdagJn = 'N';
+        if _dato = bankdagFor(intnx('weekv', _dato, 1, 'b')) then ultimo_uge_dansk_bankdag_jn = 'J';
+        else ultimo_uge_dansk_bankdag_jn = 'N';
 
         * Determine quarter boundaries;
-        primoDanskBankdagKvartal = dhms(BankdagEfter(intnx('qtr', _dato, -1, 'e')), 0, 0, 0);
-        if _dato = datepart(primoDanskBankdagKvartal) then primoDanskBankdagKvartalJn = 'J';
-        else primoDanskBankdagKvartalJn = 'N';
+        primo_dansk_bankdag_kvartal = dhms(BankdagEfter(intnx('qtr', _dato, -1, 'e')), 0, 0, 0);
+        if _dato = datepart(primo_dansk_bankdag_kvartal) then primo_dansk_bankdag_kvartal_jn = 'J';
+        else primo_dansk_bankdag_kvartal_jn = 'N';
 
-        ultimoDanskBankdagKvartal = dhms(BankdagFor(intnx('qtr', _dato, 1, 'b')), 0, 0, 0);
-        if _dato = datepart(ultimoDanskBankdagKvartal) then ultimoDanskBankdagKvartalJn = 'J';
-        else ultimoDanskBankdagKvartalJn = 'N';
+        ultimo_dansk_bankdag_kvartal = dhms(bankdagFor(intnx('qtr', _dato, 1, 'b')), 0, 0, 0);
+        if _dato = datepart(ultimo_dansk_bankdag_kvartal) then ultimo_dansk_bankdag_kvartal_jn = 'J';
+        else ultimo_dansk_bankdag_kvartal_jn = 'N';
 
-        primoDkBdagKvtForrigeKvt = dhms(BankdagEfter(intnx('qtr', _dato, -2, 'e')), 0, 0, 0);
-        ultimoDkBdagKvtForrigeKvt = dhms(BankdagFor(intnx('qtr', _dato, 0, 'b')), 0, 0, 0);
+        primo_dk_bdag_kvt_forrige_kvt = dhms(BankdagEfter(intnx('qtr', _dato, -2, 'e')), 0, 0, 0);
+        ultimo_dk_bdag_kvt_forrige_kvt = dhms(bankdagFor(intnx('qtr', _dato, 0, 'b')), 0, 0, 0);
 
         * Determine year boundaries;
-        primoDanskBankdagAar = dhms(BankdagEfter(intnx('year', _dato, -1, 'e')), 0, 0, 0);
-        if _dato = datepart(primoDanskBankdagAar) then primoDanskBankdagAarJn = 'J';
-        else primoDanskBankdagAarJn = 'N';
+        primo_dansk_bankdag_aar = dhms(BankdagEfter(intnx('year', _dato, -1, 'e')), 0, 0, 0);
+        if _dato = datepart(primo_dansk_bankdag_aar) then primo_dansk_bankdag_aar_jn = 'J';
+        else primo_dansk_bankdag_aar_jn = 'N';
 
-        ultimoDanskBankdagAar = dhms(BankdagFor(intnx('year', _dato, 1, 'b')), 0, 0, 0);
-        if _dato = datepart(ultimoDanskBankdagAar) then ultimoDanskBankdagAarJn = 'J';
-        else ultimoDanskBankdagAarJn = 'N';
+        ultimo_dansk_bankdag_aar = dhms(bankdagFor(intnx('year', _dato, 1, 'b')), 0, 0, 0);
+        if _dato = datepart(ultimo_dansk_bankdag_aar) then ultimo_dansk_bankdag_aar_jn = 'J';
+        else ultimo_dansk_bankdag_aar_jn = 'N';
 
         * Calculate additional fields;
-        bankdagForrigeDag = dhms(BankdagFor(_dato), 0, 0, 0);
-        primoDanskBankdagForrigeMdr = dhms(BankdagEfter(intnx('month', _dato, -2, 'e')), 0, 0, 0);
-        ultimoDanskBankdagForrigeMdr = dhms(BankdagFor(intnx('month', _dato, 0, 'b')), 0, 0, 0);
+        bankdag_forrige_dag = dhms(bankdagFor(_dato), 0, 0, 0);
+        primo_dansk_bankdag_forrige_mdr = dhms(BankdagEfter(intnx('month', _dato, -2, 'e')), 0, 0, 0);
+        ultimo_dansk_bankdag_forrige_mdr = dhms(bankdagFor(intnx('month', _dato, 0, 'b')), 0, 0, 0);
 
-        if dagNr = 20 then forsteBdEfter20KldagDato = dhms(bankdagefter(datepart(_dato)), 0, 0, 0);
+        if dag_nr = 20 then forste_bd_efter_20_kldag_dato = dhms(BankdagEfter(datepart(_dato)), 0, 0, 0);
 
-        if _dato = forsteBdEfter20KldagDato then forsteBdEfter20KldagJn = 'J';
-        else forsteBdEfter20KldagJn = 'N';
+        if _dato = forste_bd_efter_20_kldag_dato then forste_bd_efter_20_kldag_jn = 'J';
+        else forste_bd_efter_20_kldag_jn = 'N';
 
-        if primoDanskBankdagKvartalJn = 'J' then antalBankdageEfterPrimoKvt = 1;
-        else if erBankdag(_dato) then antalBankdageEfterPrimoKvt + 1;
+        if primo_dansk_bankdag_kvartal_jn = 'J' then antal_bankdage_efter_primo_kvt = 1;
+        else if erbankdag(_dato) then antal_bankdage_efter_primo_kvt + 1;
 
-        if antalBankdageEfterPrimoKvt = 6 then do;
-            irbOutputJn = 'J';
-            irbOutputDato = dhms(_dato, 0, 0, 0);
+        if antal_bankdage_efter_primo_kvt = 6 then do;
+            irb_output_jn = 'J';
+            irb_output_dato = dhms(_dato, 0, 0, 0);
         end;
-        else irbOutputJn = 'N';
+        else irb_output_jn = 'N';
 
         output;
     end;
 
-    format ultimoMdr
-    primoMdr
-    primoForrigeMdr
-    ultimoForrigeMdr
-    primoDkBdagKvtForrigeKvt
-    ultimoDkBdagKvtForrigeKvt
-    ultimoDanskBankdagKvartal
-    primoDanskBankdagKvartal
-    primoDanskBankdag
-    ultimoDanskBankdag
-    bankdagForrigeDag
-    primoDanskBankdagForrigeMdr
-    ultimoDanskBankdagForrigeMdr
-    ultimoTyskBankdag
-    primoTyskBankdag
-    primoDanskBankdagAar
-    ultimoDanskBankdagAar
-    irbOutputDato
-    forsteBdEfter20KldagDato
+    format ultimo_mdr
+    primo_mdr
+    primo_forrige_mdr
+    ultimo_forrige_mdr
+    primo_dk_bdag_kvt_forrige_kvt
+    ultimo_dk_bdag_kvt_forrige_kvt
+    ultimo_dansk_bankdag_kvartal
+    primo_dansk_bankdag_kvartal
+    primo_dansk_bankdag
+    ultimo_dansk_bankdag
+    bankdag_forrige_dag
+    primo_dansk_bankdag_forrige_mdr
+    ultimo_dansk_bankdag_forrige_mdr
+    ultimo_tysk_bankdag
+    primo_tysk_bankdag
+    primo_dansk_bankdag_aar
+    ultimo_dansk_bankdag_aar
+    irb_output_dato
+    forste_bd_efter_20_kldag_dato
     dato
     datetime25.6
     ;
 
     drop
-    startDato
-    slutDato
+    start_dato
+    slut_dato
     _dato
-    antalBankdageEfterPrimoKvt
+    antal_bankdage_efter_primo_kvt
     ;
+run;
+
+%metalib(dqres)
+proc append base=&inlibdqres..kalender data=work.dato_tabel;
 run;
