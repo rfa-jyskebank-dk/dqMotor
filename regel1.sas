@@ -1,3 +1,9 @@
+/**
+@file regel1.sas
+@brief tæller antal rækker i en tabel
+@details regel1.sas
+**/
+
 %metalib(&libname.);
 
 proc sql;

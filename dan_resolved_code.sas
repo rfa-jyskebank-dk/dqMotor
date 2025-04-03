@@ -1,5 +1,5 @@
 %metalib(&inlibdqres);
-
+/*sammensætter det data der skal bruges for en given regel*/
 proc sql;
 	create table test as
 		SELECT rb.regel_id,
@@ -25,8 +25,10 @@ proc sql;
 	;
 quit;
 
+/* sætter en kørselsdato */
 %let optaellingsdato=&datokortdt.;
 
+/*danner macro variavle*/
 data _null_;
 	set test;
 	call symputx('oplsaagsdato',oplsaagsdato);
@@ -36,6 +38,7 @@ data _null_;
 	call symputx('libname',libname);
 run;
 
+/*find udtræksdato*/
 proc sql noprint;
 	select &oplsaagsdato format=best32. into :udtraeksdato trimmed
 		from &inlibdqres..kalender
@@ -43,6 +46,7 @@ proc sql noprint;
 	;
 quit;
 
+/*resolver den kode der skal køres*/
 %put &udtraeksdato;
 filename myfile "/home/JB4555/dqMotor/regel1.sas";
 
@@ -51,6 +55,7 @@ data regel_data;
 	retain kode '';
 	infile myfile lrecl=32767 termstr=LF truncover end=eof;
 	input line $char1000.;
+/* erstatter macrovarialbe med den resolved værdi */
 	udtraeksdato = symget('udtraeksdato');
 	kolonne_navn = symget('kolonne_navn');
 	tabel_navn = symget('tabel_navn');
@@ -71,9 +76,11 @@ data regel_data;
 		output;
 run;
 
+/* hent den resolved kode*/
 data _null_;
 set regel_data;
 call symput('regel_kode',kode);
 run;
 
+/*kør koden*/
 &regel_kode;
