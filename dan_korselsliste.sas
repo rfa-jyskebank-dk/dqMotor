@@ -20,8 +20,8 @@ proc sql noprint;
 quit;
 
 
-proc transpose data=&inlibdqres..kalender 
-out=korselsfrekvens(rename=(_name_=jn_kolonne JN1=JN) 
+proc transpose data=&inlibdqres..kalender
+out=korselsfrekvens(rename=(_name_=jn_kolonne JN1=JN)
 drop=_label_) prefix=JN;
   var &jn_kolonne;
   where dato=dhms(&afviklingsdato,0,0,0);
@@ -65,7 +65,7 @@ proc sql;
       left join &inlibdqres..regel_korselsliste rkl
         on rb.regel_id = rkl.regel_id
         and rkl.afviklingsdato = dhms(&afviklingsdato,0,0,0)
-/*		left joiner frekvens mapping tabeller så 
+/*		left joiner frekvens mapping tabeller så
 		vi kan tjekke om der skal køres for dagen*/
       left join &inlibdqres..frekvens_opslag_dato_mapping fodm
         on fodm.frekvens=rb.afviklingsfrekvens
@@ -102,7 +102,16 @@ data korselsliste_spor;
 run;
 
 /* inserter i tabellen*/
-data insert_data;
+
+proc sql;
+  insert into &inlibdqres..regel_korselsliste(regel_id, afviklingsdato, spor)
+    select regel_id, afviklingsdato, spor
+    from work.korselsliste_spor
+    ;
+quit;
+
+/* Hvis oversåtende ikke virker, så virker dette */
+/* data insert_data;
   set work.korselsliste_spor;
   length update con cmd $512;
   update="insert into DQRestricted.regel_korselsliste(regel_id, afviklingsdato, spor) values("||strip(regel_id)||","||strip(sasToSqlDatetime(afviklingsdato))||","||strip(spor)||")";
@@ -113,5 +122,5 @@ run;
 data _NULL_;
   set work.insert_data;
   call execute(cmd);
-run;
+run; */
 %mend dan_korselsliste
