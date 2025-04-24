@@ -40,7 +40,7 @@ proc sql;
 AS (SELECT rk.regel_id,
            RANK() OVER (PARTITION BY rk.regel_id ORDER BY rk.start_datetime DESC) AS run_rank,
            DATEDIFF(MILLISECOND, rk.start_datetime, rk.slut_datetime) AS run_duration
-    FROM Datakvalitet.DQRestricted.regel_korselsliste AS rk)
+    FROM Datakvalitet.DQRestricted.regel_koerselsliste AS rk)
     SELECT ranked_runs.regel_id,
           AVG(ranked_runs.run_duration) AS avg_runtime
     FROM ranked_runs
@@ -62,7 +62,7 @@ proc sql;
       coalesce(ar.avg_runtime, 1) as avg_runtime
     from &inlibdqres..regel_beskrivelse rb
 /* left joiner korselslisten så vi ikke lægger de samme regler på 2 gange */
-      left join &inlibdqres..regel_korselsliste rkl
+      left join &inlibdqres..regel_koerselsliste rkl
         on rb.regel_id = rkl.regel_id
         and rkl.afviklingsdato = dhms(&afviklingsdato,0,0,0)
 /*		left joiner frekvens mapping tabeller så
@@ -104,7 +104,7 @@ run;
 /* inserter i tabellen*/
 
 proc sql;
-  insert into &inlibdqres..regel_korselsliste(regel_id, afviklingsdato, spor)
+  insert into &inlibdqres..regel_koerselsliste(regel_id, afviklingsdato, spor)
     select regel_id, afviklingsdato, spor
     from work.korselsliste_spor
     ;
@@ -114,7 +114,7 @@ quit;
 /* data insert_data;
   set work.korselsliste_spor;
   length update con cmd $512;
-  update="insert into DQRestricted.regel_korselsliste(regel_id, afviklingsdato, spor) values("||strip(regel_id)||","||strip(sasToSqlDatetime(afviklingsdato))||","||strip(spor)||")";
+  update="insert into DQRestricted.regel_koerselsliste(regel_id, afviklingsdato, spor) values("||strip(regel_id)||","||strip(sasToSqlDatetime(afviklingsdato))||","||strip(spor)||")";
   con='READBUFF=32767  INSERTBUFF=32767  Datasrc=JK_T_DQ AUTHDOMAIN="JBMAIN00_AUTH"';
   cmd="proc sql;connect to ODBC ("||strip(con)||");reset noprint;execute ("||strip(update)||") by ODBC;disconnect from ODBC;quit;";
 run;
