@@ -1,3 +1,8 @@
+/**
+  @file
+  @brief <Your brief here>
+  <h4> SAS Macros </h4>
+**/
 %metalib(&inlibdqres);
 /*%metareg(&inlibdqres);*/
 %inc '/home/JB4555/dqMotor/resolve_code.sas';
@@ -22,17 +27,22 @@ proc sql;
       rdk.kolonne_navn,
       rdt.tabel_navn,
       rdt.tidsafgraensnings_kolonne,
-      rdsl.libname
+      rdsl.libname,
+      coalesce(rs.regel_kode, ra.regel_kode) as regel_kode
     FROM &inlibdqres..regel_beskrivelse AS rb
-      left JOIN &inlibdqres..regel_data_map AS rdm
+      inner JOIN &inlibdqres..regel_data_map AS rdm
         ON rdm.regel_id = rb.regel_id
-      left JOIN &inlibdqres..regel_data_kolonne AS rdk
+      inner JOIN &inlibdqres..regel_data_kolonne AS rdk
         ON rdk.kolonne_id = rdm.kolonne_id
-      left JOIN &inlibdqres..regel_data_tabel AS rdt
+      inner JOIN &inlibdqres..regel_data_tabel AS rdt
         ON rdt.tabel_id = rdk.tabel_id
-      left JOIN &inlibdqres..regel_data_schema_libname AS rdsl
-        ON	rdsl.schema_libname_id = rdt.schema_libname_id
-      WHERE rb.regel_id=23
+      inner JOIN &inlibdqres..regel_data_schema_libname AS rdsl
+        ON rdsl.schema_libname_id = rdt.schema_libname_id
+      left JOIN &inlibdqres..regel_avanceret AS ra
+        ON ra.regel_id = rb.regel_id
+      left join &inlibdqres..regel_standard AS rs
+        ON rs.regel_type_id = rb.regel_type_id
+      WHERE rb.regel_id=26
 
   ;
 quit;
@@ -40,14 +50,13 @@ quit;
 /* tjekker om der er datar for alle datasæt */
 %check_data(inputdata=regel_data, debug=0);
 
-%put &=exitcode;
+data _null_;
+  call symputx('regel_type_id',regel_type_id);
+run;
+
 data _null_;
   set regel_data;
   call symputx('opslagsdato',opslagsdato);
-  call symputx('kolonne_navn', kolonne_navn);
-  call symputx('tabel_navn',tabel_navn);
-  call symputx('tidsafgraensnings_kolonne',tidsafgraensnings_kolonne);
-  call symputx('libname',libname);
 run;
 
 /* finder relevante datoer */
@@ -58,8 +67,17 @@ proc sql noprint;
   ;
 quit;
 
-
-
+/* erstat macro var med værdier fra regel_data */
 %resolve_code(regelnr=1,debug=0);
 
+
+/* afvikler koden */
 &regel_kode;
+
+
+/*log data*/
+proc sql;
+   insert into &inlibdqres..regel_koerselsliste_log(afviklingsdato, exit_code, regel_kode)
+   values( &afviklingsdato, &syscc, %tslit(&regel_kode));
+;
+quit;
