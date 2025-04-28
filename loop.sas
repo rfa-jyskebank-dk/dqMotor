@@ -74,10 +74,51 @@ quit;
 /* afvikler koden */
 &regel_kode;
 
+/* gemmer statuskode for afviklings af koden */
+%let exit_code = &SYSERR;
 
-/*log data*/
+/*log koden der er afviklet. Bemærk denne værdi ikke ligger i kørselslisten,
+da der ved omkørsel vil være 2 værdier for samme dag. */
 proc sql;
-   insert into &inlibdqres..regel_koerselsliste_log(afviklingsdato, exit_code, regel_kode)
-   values( &afviklingsdato, &syscc, %tslit(&regel_kode));
+    insert into &inlibdqres..regel_koerselsliste_log(
+      afviklingsdato
+      ,regel_id
+      ,exit_code
+      ,regel_kode)
+    values( &afviklingsdato, &exit_code, %tslit(&regel_kode));
+quit;
+
+/* opdater kørselslisten med status for optaelling */
+proc sql;
+  update &inlibdqres..regel_koerselsliste
+  set afviklingsstatus = &exit_code
+  where regel_id = &regel_id
+    and afvikling_dt = &afviklingsdato
 ;
 quit;
+
+
+
+%if &exit_code = 0 %then %do;
+/* indsæt måling */
+proc sql;
+    insert into &inlibdqres..regel_maaling(
+       regel_id
+      ,maaling
+      ,koersel_dt
+      ,data_pr_tidsenhed)
+    values(&regel_id, &antal, &afviklingsdato, &opslagsdato);
+quit;
+
+/*
+TODO: kode der tjekker grænseværdier */
+/*
+
+/*
+TODO: send mail til dataejer hvis fejl
+*/
+
+/*
+TODO: log at mail er afsendt
+*/
+%end;
