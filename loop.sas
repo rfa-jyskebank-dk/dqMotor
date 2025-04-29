@@ -30,15 +30,15 @@ proc sql;
       rdsl.libname,
       coalesce(rs.regel_kode, ra.regel_kode) as regel_kode
     FROM &inlibdqres..regel_beskrivelse AS rb
-      inner JOIN &inlibdqres..regel_data_map AS rdm
+      inner join &inlibdqres..regel_data_map AS rdm
         ON rdm.regel_id = rb.regel_id
-      inner JOIN &inlibdqres..regel_data_kolonne AS rdk
+      inner join &inlibdqres..regel_data_kolonne AS rdk
         ON rdk.kolonne_id = rdm.kolonne_id
-      inner JOIN &inlibdqres..regel_data_tabel AS rdt
+      inner join &inlibdqres..regel_data_tabel AS rdt
         ON rdt.tabel_id = rdk.tabel_id
-      inner JOIN &inlibdqres..regel_data_schema_libname AS rdsl
+      inner join &inlibdqres..regel_data_schema_libname AS rdsl
         ON rdsl.schema_libname_id = rdt.schema_libname_id
-      left JOIN &inlibdqres..regel_avanceret AS ra
+      left join &inlibdqres..regel_avanceret AS ra
         ON ra.regel_id = rb.regel_id
       left join &inlibdqres..regel_standard AS rs
         ON rs.regel_type_id = rb.regel_type_id
@@ -111,9 +111,21 @@ proc sql;
 quit;
 
 /*
-TODO: kode der tjekker grænseværdier */
-/*
-
+TODO: kode der tjekker grænseværdier
+*/
+data _null_;
+  set &inlibdqres..regel_maaling;
+  call symputx('maaling_id,maaling_id');
+  where regel_id=&regel_id
+  and afviklingsdato=&afviklingsdato
+  and opslagsdato=&opslagsdato
+  ;
+run;
+%tjek_graensevaerdier(
+regel_id=&regel_id,
+opslagsdato=&opslagsdato,
+maaling_id=&maaling_id
+);
 /*
 TODO: send mail til dataejer hvis fejl
 */
